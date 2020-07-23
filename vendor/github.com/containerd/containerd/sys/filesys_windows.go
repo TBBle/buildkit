@@ -26,7 +26,6 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/Microsoft/hcsshim"
 	"golang.org/x/sys/windows"
 )
 
@@ -260,9 +259,13 @@ func windowsOpenSequential(path string, mode int, _ uint32) (fd windows.Handle, 
 // ForceRemoveAll is the same as os.RemoveAll, but uses hcsshim.DestroyLayer in order
 // to delete container layers.
 func ForceRemoveAll(path string) error {
+	return os.RemoveAll(path)
+	/* TODO: Only remove layers; for some reason this is raising an exception 0xc0000420
+		from the syscall when we attempt to do this to the whole test-root.
 	info := hcsshim.DriverInfo{
 		HomeDir: filepath.Dir(path),
 	}
 
 	return hcsshim.DestroyLayer(info, filepath.Base(path))
+	*/
 }

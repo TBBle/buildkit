@@ -4,9 +4,9 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/Microsoft/go-winio v0.4.15
-	github.com/Microsoft/hcsshim v0.8.10
-	github.com/Microsoft/hcsshim/test v0.0.0-20201119174602-966bebae11b4
+	github.com/Microsoft/go-winio v0.4.16
+	github.com/Microsoft/hcsshim v0.8.14
+	github.com/Microsoft/hcsshim/test v0.0.0-20201218223536-d3e5debf77da
 	github.com/containerd/aufs v0.0.0-20200908144142-dab0cbea06f4
 	github.com/containerd/btrfs v0.0.0-20201111183144-404b9149801e
 	github.com/containerd/cgroups v0.0.0-20200824123100-0b889c03f102
@@ -53,7 +53,7 @@ require (
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/sys v0.0.0-20201202213521-69691e467435
+	golang.org/x/sys v0.0.0-20210104204734-6f8348627aad
 	google.golang.org/grpc v1.30.0
 	gotest.tools/v3 v3.0.2
 	k8s.io/api v0.19.4
@@ -67,6 +67,8 @@ require (
 )
 
 replace (
+	github.com/Microsoft/go-winio => github.com/TBBle/go-winio v0.4.17-0.20210105170125-91aeaa690a7a
+	github.com/Microsoft/hcsshim => github.com/TBBle/hcsshim v0.8.8-0.20210110043930-06630f9cb727
 	github.com/gogo/googleapis => github.com/gogo/googleapis v1.3.2
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
 	// urfave/cli must be <= v1.22.1 due to a regression: https://github.com/urfave/cli/issues/1092

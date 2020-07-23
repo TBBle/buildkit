@@ -27,3 +27,22 @@ func AsWindowsContainerLayer() ApplyOpt {
 		return nil
 	}
 }
+
+// AsWindowsContainerLayerPair indicates that the paths to diff are a pair of
+// Windows Container Layers. The caller must be holding SeBackupPrivilege.
+func AsWindowsContainerLayerPair() WriteDiffOpt {
+	return func(options *WriteDiffOptions) error {
+		options.writeDiffFunc = writeDiffWindowsLayers
+		return nil
+	}
+}
+
+// WithParentLayers provides the Windows Container Layers that are the parents
+// of the target (right-hand, "upper") layer, if any. The source (left-hand, "lower")
+// layer passed to WriteDiff should be "" in this case.
+func WithParentLayers(p []string) WriteDiffOpt {
+	return func(options *WriteDiffOptions) error {
+		options.ParentLayers = p
+		return nil
+	}
+}

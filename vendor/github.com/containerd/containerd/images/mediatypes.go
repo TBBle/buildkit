@@ -102,7 +102,13 @@ func parseMediaTypes(mt string) (string, []string) {
 	return s[0], ext
 }
 
-// IsLayerTypes returns true if the media type is a layer
+// IsNonDistributable returns true if the media type is non-distributable.
+func IsNonDistributable(mt string) bool {
+	return strings.HasPrefix(mt, "application/vnd.oci.image.layer.nondistributable.") ||
+		strings.HasPrefix(mt, "application/vnd.docker.image.rootfs.foreign.")
+}
+
+// IsLayerType returns true if the media type is a layer
 func IsLayerType(mt string) bool {
 	if strings.HasPrefix(mt, "application/vnd.oci.image.layer.") {
 		return true

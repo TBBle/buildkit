@@ -5,8 +5,8 @@ go 1.13
 require (
 	github.com/AkihiroSuda/containerd-fuse-overlayfs v1.0.0
 	github.com/BurntSushi/toml v0.3.1
-	github.com/Microsoft/go-winio v0.4.15
-	github.com/Microsoft/hcsshim v0.8.10
+	github.com/Microsoft/go-winio v0.4.16
+	github.com/Microsoft/hcsshim v0.8.14
 	github.com/codahale/hdrhistogram v0.0.0-20160425231609-f8ad88b59a58 // indirect
 	github.com/containerd/console v1.0.1
 	github.com/containerd/containerd v1.4.1-0.20201215193253-e922d5553d12
@@ -62,7 +62,7 @@ require (
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20201202213521-69691e467435
+	golang.org/x/sys v0.0.0-20210104204734-6f8348627aad
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1
 	// genproto: the actual version is replaced in replace()
 	google.golang.org/genproto v0.0.0-20200527145253-8367513e4ece
@@ -70,6 +70,8 @@ require (
 )
 
 replace (
+
+	github.com/containerd/containerd => github.com/TBBle/containerd v1.3.1-0.20210110044450-0f80b21803c7
 	// estargz: needs this replace because stargz-snapshotter git repo has two go.mod modules.
 	github.com/containerd/stargz-snapshotter/estargz => github.com/containerd/stargz-snapshotter/estargz v0.0.0-20201217071531-2b97b583765b
 	// protobuf: corresponds to containerd
