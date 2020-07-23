@@ -67,10 +67,13 @@ func mapUserToChowner(user *copy.User, idmap *idtools.IdentityMapping) (copy.Cho
 }
 
 func mkdir(ctx context.Context, d string, action pb.FileActionMkDir, user *copy.User, idmap *idtools.IdentityMapping) error {
+	log.Printf("-- mkdir %s %s", d, action.Path)
 	p, err := fs.RootPath(filepath.ToSlash(d), filepath.ToSlash(filepath.Join(filepath.Join("/", action.Path))))
 	if err != nil {
+		log.Printf("--- mkdir failed 1")
 		return err
 	}
+	log.Printf("--- mkdir %s", p)
 
 	ch, err := mapUserToChowner(user, idmap)
 	if err != nil {
@@ -78,10 +81,12 @@ func mkdir(ctx context.Context, d string, action pb.FileActionMkDir, user *copy.
 	}
 
 	if action.MakeParents {
+		log.Printf("--- mkdir MkdirAll(%s)", p)
 		if err := copy.MkdirAll(p, os.FileMode(action.Mode)&0777, ch, timestampToTime(action.Timestamp)); err != nil {
 			return err
 		}
 	} else {
+		log.Printf("--- mkdir Mkdir(%s)", p)
 		if err := os.Mkdir(p, os.FileMode(action.Mode)&0777); err != nil {
 			if errors.Is(err, os.ErrExist) {
 				return nil
@@ -101,8 +106,10 @@ func mkdir(ctx context.Context, d string, action pb.FileActionMkDir, user *copy.
 }
 
 func mkfile(ctx context.Context, d string, action pb.FileActionMkFile, user *copy.User, idmap *idtools.IdentityMapping) error {
+	log.Printf("-- mkfile %s %s", d, action.Path)
 	p, err := fs.RootPath(filepath.ToSlash(d), filepath.ToSlash(filepath.Join(filepath.Join("/", action.Path))))
 	if err != nil {
+		log.Printf("--- mkfile failed 1")
 		return err
 	}
 	p = filepath.FromSlash(p)
@@ -124,6 +131,7 @@ func mkfile(ctx context.Context, d string, action pb.FileActionMkFile, user *cop
 		return err
 	}
 
+	log.Printf("--- mkfile okay")
 	return nil
 }
 
@@ -148,29 +156,36 @@ func rm(ctx context.Context, d string, action pb.FileActionRm) error {
 }
 
 func rmPath(root, src string, allowNotFound bool) error {
+	log.Printf("-- rmPath %s %s", root, src)
 	p, err := fs.RootPath(filepath.ToSlash(root), filepath.ToSlash(filepath.Join(filepath.Join("/", src))))
 	if err != nil {
+		log.Printf("--- rmPath failed 1")
 		return err
 	}
 	p = filepath.FromSlash(p)
 
 	if err := os.RemoveAll(p); err != nil {
 		if errors.Is(err, os.ErrNotExist) && allowNotFound {
+			log.Printf("--- rmPath okay-notfound")
 			return nil
 		}
 		return err
 	}
 
+	log.Printf("--- rmPath okay")
 	return nil
 }
 
 func docopy(ctx context.Context, src, dest string, action pb.FileActionCopy, u *copy.User, idmap *idtools.IdentityMapping) error {
+	log.Printf("-- docopy %s %s %s", src, dest, action.Dest)
 	srcPath := cleanPath(action.Src)
 	destPath := cleanPath(action.Dest)
 
 	if !action.CreateDestPath {
+		log.Printf("--- docopy RootPath %s %s", dest, action.Dest)
 		p, err := fs.RootPath(filepath.ToSlash(dest), filepath.ToSlash(filepath.Join(filepath.Join("/", action.Dest))))
 		if err != nil {
+			log.Printf("--- docopy failed 1")
 			return err
 		}
 		p = filepath.FromSlash(p)
@@ -207,9 +222,11 @@ func docopy(ctx context.Context, src, dest string, action pb.FileActionCopy, u *
 			if ok, err := unpack(ctx, src, srcPath, dest, destPath, ch, timestampToTime(action.Timestamp)); err != nil {
 				return err
 			} else if ok {
+				log.Printf("--- docopy okay - nowildcard dockercompat")
 				return nil
 			}
 		}
+		log.Printf("--- docopy Copy1 %s %s %s %s", src, srcPath, dest, destPath)
 		return copy.Copy(ctx, src, srcPath, dest, destPath, opt...)
 	}
 
@@ -220,6 +237,7 @@ func docopy(ctx context.Context, src, dest string, action pb.FileActionCopy, u *
 
 	if len(m) == 0 {
 		if action.AllowEmptyWildcard {
+			log.Printf("--- docopy okay - allowemptywildcard")
 			return nil
 		}
 		return errors.Errorf("%s not found", srcPath)
@@ -233,11 +251,14 @@ func docopy(ctx context.Context, src, dest string, action pb.FileActionCopy, u *
 				continue
 			}
 		}
+		log.Printf("--- docopy Copy2 %s %s %s %s", src, s, dest, destPath)
 		if err := copy.Copy(ctx, src, s, dest, destPath, opt...); err != nil {
+			log.Printf("--- docopy failed 1")
 			return err
 		}
 	}
 
+	log.Printf("--- docopy okay")
 	return nil
 }
 
