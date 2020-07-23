@@ -1,6 +1,9 @@
 package snapshot
 
 import (
+	"io/ioutil"
+	"os"
+
 	"github.com/containerd/containerd/errdefs"
 	"github.com/containerd/containerd/mount"
 	"github.com/pkg/errors"
@@ -40,11 +43,13 @@ func (lm *localMounter) Mount() (string, error) {
 		}
 	}
 
-	// Windows mounts always activate in-place, so the target of the mount must be the source directory.
-	// See https://github.com/containerd/containerd/pull/2366
-	dir := m.Source
+	dir, err := ioutil.TempDir("", "buildkit-mount")
+	if err != nil {
+		return "", errors.Wrap(err, "failed to create temp dir")
+	}
 
 	if err := m.Mount(dir); err != nil {
+		os.RemoveAll(dir)
 		return "", errors.Wrapf(err, "failed to mount in-place: %v", m)
 	}
 	lm.target = dir
@@ -59,6 +64,7 @@ func (lm *localMounter) Unmount() error {
 		if err := mount.Unmount(lm.target, 0); err != nil {
 			return err
 		}
+		os.RemoveAll(lm.target)
 		lm.target = ""
 	}
 
