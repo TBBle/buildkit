@@ -14,8 +14,6 @@ import (
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
 	containerdoci "github.com/containerd/containerd/oci"
-	"github.com/containerd/continuity/fs"
-	"github.com/docker/docker/pkg/idtools"
 	"github.com/moby/buildkit/executor"
 	"github.com/moby/buildkit/executor/oci"
 	"github.com/moby/buildkit/frontend/gateway/errdefs"
@@ -23,7 +21,6 @@ import (
 	"github.com/moby/buildkit/snapshot"
 	"github.com/moby/buildkit/solver/pb"
 	"github.com/moby/buildkit/util/network"
-	"github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -106,7 +103,7 @@ func (w *containerdExecutor) Run(ctx context.Context, id string, root executor.M
 	}
 
 	lm := snapshot.LocalMounterWithMounts(rootMounts)
-	rootfsPath, err := lm.Mount()
+	_, err = lm.Mount()
 	if err != nil {
 		return err
 	}
@@ -118,6 +115,7 @@ func (w *containerdExecutor) Run(ctx context.Context, id string, root executor.M
 		}
 	}()
 
+	/* HACK: Disable to make it work on Windows
 	var sgids []uint32
 	uid, gid, err := oci.ParseUIDGID(meta.User)
 	if err != nil {
@@ -141,6 +139,7 @@ func (w *containerdExecutor) Run(ctx context.Context, id string, root executor.M
 			}
 		}
 	}
+	*/
 
 	lm.Unmount()
 
@@ -158,7 +157,7 @@ func (w *containerdExecutor) Run(ctx context.Context, id string, root executor.M
 		logrus.Info("enabling HostNetworking")
 	}
 
-	opts := []containerdoci.SpecOpts{oci.WithUIDGID(uid, gid, sgids)}
+	opts := []containerdoci.SpecOpts{ /*oci.WithUIDGID(uid, gid, sgids)*/ }
 	if meta.ReadonlyRootFS {
 		opts = append(opts, containerdoci.WithRootFSReadonly())
 	}
@@ -270,6 +269,7 @@ func (w *containerdExecutor) Exec(ctx context.Context, id string, process execut
 	}
 
 	proc := spec.Process
+	/* HACK: Disable to make it work on Windows
 
 	// TODO how do we get rootfsPath for oci.GetUser in case user passed in username rather than uid:gid?
 	// For now only support uid:gid
@@ -284,6 +284,7 @@ func (w *containerdExecutor) Exec(ctx context.Context, id string, process execut
 			AdditionalGids: []uint32{},
 		}
 	}
+	*/
 
 	proc.Terminal = meta.Tty
 	proc.Args = meta.Args
