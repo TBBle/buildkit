@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -796,7 +797,12 @@ func (m *readOnlyMounter) Mount() ([]mount.Mount, func() error, error) {
 				opts = append(opts, opt)
 			}
 		}
-		opts = append(opts, "ro")
+		// Windows cannot read-only bind-mount.
+		if runtime.GOOS == "windows" && m.Type == "bind" {
+			opts = append(opts, "rw")
+		} else {
+			opts = append(opts, "ro")
+		}
 		mounts[i].Options = opts
 	}
 	return mounts, release, nil

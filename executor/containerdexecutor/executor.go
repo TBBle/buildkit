@@ -13,7 +13,6 @@ import (
 
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cio"
-	"github.com/containerd/containerd/mount"
 	containerdoci "github.com/containerd/containerd/oci"
 	"github.com/containerd/continuity/fs"
 	"github.com/docker/docker/pkg/idtools"
@@ -111,8 +110,13 @@ func (w *containerdExecutor) Run(ctx context.Context, id string, root executor.M
 	if err != nil {
 		return err
 	}
-	defer lm.Unmount()
-	defer executor.MountStubsCleaner(rootfsPath, mounts)()
+	defer func() {
+		rootfsPath, err := lm.Mount()
+		if err == nil {
+			executor.MountStubsCleaner(rootfsPath, mounts)()
+			lm.Unmount()
+		}
+	}()
 
 	var sgids []uint32
 	uid, gid, err := oci.ParseUIDGID(meta.User)
@@ -137,6 +141,8 @@ func (w *containerdExecutor) Run(ctx context.Context, id string, root executor.M
 			}
 		}
 	}
+
+	lm.Unmount()
 
 	provider, ok := w.networkProviders[meta.NetMode]
 	if !ok {
@@ -194,11 +200,7 @@ func (w *containerdExecutor) Run(ctx context.Context, id string, root executor.M
 		cioOpts = append(cioOpts, cio.WithTerminal)
 	}
 
-	task, err := container.NewTask(ctx, cio.NewCreator(cioOpts...), containerd.WithRootFS([]mount.Mount{{
-		Source:  rootfsPath,
-		Type:    "bind",
-		Options: []string{"rbind"},
-	}}))
+	task, err := container.NewTask(ctx, cio.NewCreator(cioOpts...), containerd.WithRootFS(rootMounts))
 	if err != nil {
 		return err
 	}
